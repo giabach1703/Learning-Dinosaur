@@ -1,4 +1,4 @@
-import prisma from '../config/prisma';
+import prisma from "../config/prisma";
 
 interface DefaultBadge {
   code: string;
@@ -8,29 +8,29 @@ interface DefaultBadge {
 
 const DEFAULT_BADGES: DefaultBadge[] = [
   {
-    code: 'FIRST_STEP',
-    name: 'First Step',
-    description: 'Học thẻ đầu tiên',
+    code: "FIRST_STEP",
+    name: "First Step",
+    description: "Học thẻ đầu tiên",
   },
   {
-    code: 'STREAK_7',
-    name: '7-Day Streak',
-    description: 'Học liên tục 7 ngày',
+    code: "STREAK_7",
+    name: "7-Day Streak",
+    description: "Học liên tục 7 ngày",
   },
   {
-    code: 'STUDY_100',
-    name: '100 Cards',
-    description: 'Học đủ 100 lượt thẻ',
+    code: "STUDY_100",
+    name: "100 Cards",
+    description: "Học đủ 100 lượt thẻ",
   },
   {
-    code: 'DECK_FINISHER',
-    name: 'Deck Finisher',
-    description: 'Hoàn thành toàn bộ một deck',
+    code: "DECK_FINISHER",
+    name: "Deck Finisher",
+    description: "Hoàn thành toàn bộ một deck",
   },
   {
-    code: 'DINOSAUR_LEGEND',
-    name: 'Dinosaur Legend',
-    description: 'Đạt cấp Khủng Long Bất Tử',
+    code: "DINOSAUR_LEGEND",
+    name: "Dinosaur Legend",
+    description: "Đạt cấp Khủng Long Bất Tử",
   },
 ];
 
@@ -54,7 +54,7 @@ export async function unlockBadgeIfNeeded(
   userId: string,
   badgeCode: string,
   unlockedCodes: Set<string>,
-  tx?: any
+  tx?: any,
 ): Promise<any | null> {
   const client = tx || prisma;
   if (unlockedCodes.has(badgeCode)) {
@@ -86,7 +86,10 @@ export async function unlockBadgeIfNeeded(
   return userBadge;
 }
 
-export async function evaluateAndUnlockBadges(userId: string, tx?: any): Promise<any[]> {
+export async function evaluateAndUnlockBadges(
+  userId: string,
+  tx?: any,
+): Promise<any[]> {
   const client = tx || prisma;
 
   const user = await client.user.findUnique({
@@ -109,7 +112,7 @@ export async function evaluateAndUnlockBadges(userId: string, tx?: any): Promise
   });
 
   const unlockedCodes = new Set<string>(
-    existingUserBadges.map((userBadge) => userBadge.badge.code)
+    existingUserBadges.map((userBadge: any) => userBadge.badge.code),
   );
 
   const studyLogsCount = await client.studyLog.count({
@@ -127,10 +130,10 @@ export async function evaluateAndUnlockBadges(userId: string, tx?: any): Promise
     },
   });
 
-  const hasFinishedDeck = decks.some((deck) => {
+  const hasFinishedDeck = decks.some((deck: any) => {
     return (
       deck.cards.length > 0 &&
-      deck.cards.every((card) => card.status === 'MASTERED')
+      deck.cards.every((card: any) => card.status === "MASTERED")
     );
   });
 
@@ -139,9 +142,9 @@ export async function evaluateAndUnlockBadges(userId: string, tx?: any): Promise
   if (studyLogsCount >= 1) {
     const unlocked = await unlockBadgeIfNeeded(
       userId,
-      'FIRST_STEP',
+      "FIRST_STEP",
       unlockedCodes,
-      client
+      client,
     );
     if (unlocked) newlyUnlocked.push(unlocked);
   }
@@ -149,9 +152,9 @@ export async function evaluateAndUnlockBadges(userId: string, tx?: any): Promise
   if ((user.currentStreak || 0) >= 7) {
     const unlocked = await unlockBadgeIfNeeded(
       userId,
-      'STREAK_7',
+      "STREAK_7",
       unlockedCodes,
-      client
+      client,
     );
     if (unlocked) newlyUnlocked.push(unlocked);
   }
@@ -159,9 +162,9 @@ export async function evaluateAndUnlockBadges(userId: string, tx?: any): Promise
   if (studyLogsCount >= 100) {
     const unlocked = await unlockBadgeIfNeeded(
       userId,
-      'STUDY_100',
+      "STUDY_100",
       unlockedCodes,
-      client
+      client,
     );
     if (unlocked) newlyUnlocked.push(unlocked);
   }
@@ -169,9 +172,9 @@ export async function evaluateAndUnlockBadges(userId: string, tx?: any): Promise
   if (hasFinishedDeck) {
     const unlocked = await unlockBadgeIfNeeded(
       userId,
-      'DECK_FINISHER',
+      "DECK_FINISHER",
       unlockedCodes,
-      client
+      client,
     );
     if (unlocked) newlyUnlocked.push(unlocked);
   }
@@ -179,9 +182,9 @@ export async function evaluateAndUnlockBadges(userId: string, tx?: any): Promise
   if ((user.xp || 0) >= 3000) {
     const unlocked = await unlockBadgeIfNeeded(
       userId,
-      'DINOSAUR_LEGEND',
+      "DINOSAUR_LEGEND",
       unlockedCodes,
-      client
+      client,
     );
     if (unlocked) newlyUnlocked.push(unlocked);
   }
@@ -194,7 +197,7 @@ export async function getBadgesForUser(userId: string): Promise<any[]> {
   // SEED is run on startup, and badge checks happen on study session completion.
   const badges = await prisma.badge.findMany({
     orderBy: {
-      createdAt: 'asc',
+      createdAt: "asc",
     },
     include: {
       userBadges: {
